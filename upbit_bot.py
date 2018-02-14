@@ -105,12 +105,20 @@ def get_token_and_chat_id():
     f.close()
     return token, chat_id, user_agent
 
+def new_day_setting_func():
+    for coin in interest_coin_list:
+        dic = upbit_api('days', None, 'KRW', coin, 1, None)
+        new_coin = CryptoCoin(dic[0]['openingPrice'])
+        standard_price[coin] = new_coin
+
 if __name__ == '__main__':
     # main()
     telegram_token, telegram_chatbot_id, request_user_agent = get_token_and_chat_id()
+    new_day_setting_func()
     process_func()
     sched = BackgroundScheduler()
     sched.start()
+    sched.add_job(new_day_setting_func,'cron', hour='9')
     sched.add_job(process_func,'cron', hour='0-23', minute='*/10')
     # sched.add_job(process_func,'cron', hour='0-23', second='*/10')
 
