@@ -10,11 +10,12 @@ interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM']
 upbit_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s/%d?code=CRIX.UPBIT.%s-%s&count=%d'
 telegram_token = ''
 telegram_chatbot_id = ''
+request_user_agent = ''
 
 def upbit_api(period_type, period, market, coin, data_count):
     upbit_maked_url = upbit_url % (period_type, period, market, coin, data_count)
     print(upbit_maked_url)
-    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36'}
+    headers = {'user-agent': request_user_agent}
     resp = requests.get(upbit_maked_url, headers=headers)
     result = json.loads(resp.text)
     # print(result)
@@ -39,7 +40,7 @@ def process_func():
 
     print(bot_message)
     bot = telegram.Bot(token = telegram_token)
-    bot.sendMessage(chat_id='474560073', text=bot_message)
+    bot.sendMessage(chat_id=telegram_chatbot_id, text=bot_message)
 
 def get_token_and_chat_id():
     f = open(privacy + '/token.txt', mode='r')
@@ -50,11 +51,16 @@ def get_token_and_chat_id():
     chat_id = f.readline()
     print('Telegram chat id : ', chat_id)
     f.close()
-    return token, chat_id
+    f = open(privacy + '/user_agent.txt', mode='r')
+    user_agent = f.readline()
+    print('My user Agent : ', user_agent)
+    f.close()
+    return token, chat_id, user_agent
 
 if __name__ == '__main__':
     # main()
-    telegram_token, telegram_chatbot_id = get_token_and_chat_id()
+    telegram_token, telegram_chatbot_id, request_user_agent = get_token_and_chat_id()
+    process_func()
     sched = BackgroundScheduler()
     sched.start()
     sched.add_job(process_func,'cron', hour='0-23', minute='*/10')
