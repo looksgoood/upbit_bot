@@ -17,7 +17,7 @@ request_user_agent = ''
 standard_price = {}
 
 state_standard = 0.05
-volumn_standard = 0.5
+volumn_standard = 1.0
 
 class CryptoCoin:
     def __init__(self, prevClosingPrice):
@@ -156,19 +156,15 @@ def volumn_check_func():
     if update_message is True:
         send_message_to_bot(bot_message)
 
-
-
-
-
 if __name__ == '__main__':
     telegram_token, telegram_chatbot_id, request_user_agent = get_token_and_chat_id()
     new_day_setting_func()
     price_check_func()
     sched = BackgroundScheduler()
     sched.start()
-    sched.add_job(new_day_setting_func,'cron', hour='9', second='1')
+    sched.add_job(new_day_setting_func,'cron', hour='9', minute='1')
     sched.add_job(price_check_func,'cron', hour='0-23', minute='*/10', second='2')
-    sched.add_job(volumn_check_func,'cron', hour='0-23', minute='*/1,*/2,*/3,*/4,*/5,*/6,*/7,*/8,*/9')
+    sched.add_job(volumn_check_func,'cron', hour='0-23', minute='*/3,*/4,*/5,*/6,*/7,*/8,*/9')
 
     try:
         # This is here to simulate application activity (which keeps the main thread alive).
