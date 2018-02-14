@@ -6,7 +6,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 privacy = './privacy'
-interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM', 'ADA']
+interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM', 'ADA', 'SNT']
 upbit_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s/%d?code=CRIX.UPBIT.%s-%s&count=%d'
 upbit_without_period_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s?code=CRIX.UPBIT.%s-%s&count=%d'
 telegram_token = ''
@@ -103,7 +103,7 @@ def get_token_and_chat_id():
     user_agent = f.readline()
     print('My user Agent : ', user_agent)
     f.close()
-    return token, chat_id, user_agent
+    return token.strip(), chat_id.strip(), user_agent.strip()
 
 def new_day_setting_func():
     for coin in interest_coin_list:
