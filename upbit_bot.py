@@ -6,41 +6,89 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 privacy = './privacy'
-interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM']
+interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM', 'ADA']
 upbit_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s/%d?code=CRIX.UPBIT.%s-%s&count=%d'
+upbit_without_period_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s?code=CRIX.UPBIT.%s-%s&count=%d'
 telegram_token = ''
 telegram_chatbot_id = ''
 request_user_agent = ''
+standard_price = {}
 
-def upbit_api(period_type, period, market, coin, data_count):
-    upbit_maked_url = upbit_url % (period_type, period, market, coin, data_count)
+state_standard = 5.0
+
+class CryptoCoin:
+    def __init__(self, openingPrice):
+            self.openingPrice = openingPrice
+            self.now_state = 1.0
+
+def check_diff_trigger(coin_name, tradePrice):
+    openingPrice = standard_price[coin_name].openingPrice
+    now_state = standard_price[coin_name].now_state
+
+    if (now_state + 0.05) * openingPrice < tradePrice:
+        standard_price[coin_name].now_state += 0.05
+        return True
+    elif (now_state - 0.05) * openingPrice > tradePrice:
+        standard_price[coin_name].now_state -= 0.05
+        return True
+    
+    return False
+
+def calculate_percent(openingPrice, tradePrice):
+    return (tradePrice - openingPrice) / openingPrice
+
+def upbit_api(period_type, period, market, coin, data_count, date):
+    upbit_maked_url = ''
+    if period_type is 'minutes':
+        upbit_maked_url = upbit_url % (period_type, period, market, coin, data_count)
+    else:
+        upbit_maked_url = upbit_without_period_url % (period_type, market, coin, data_count)
+
+    if date:
+        upbit_maked_url = '%s&to=%s' % (upbit_maked_url, date)
+
     print(upbit_maked_url)
     headers = {'user-agent': request_user_agent}
     resp = requests.get(upbit_maked_url, headers=headers)
     result = json.loads(resp.text)
-    # print(result)
-    current_price = result[0]
-    tradePrice = current_price['tradePrice']
-    print(tradePrice)
-    message = coin + ': %f' % tradePrice + '\n'
 
-    return message
+    return result
 
 def get_current_market_price(coin):
     print('get', coin, 'current price.')
-    return upbit_api('minutes', 10, 'KRW', coin, 2)
+    result = upbit_api('minutes', 10, 'KRW', coin, 1, None)
+    # print(result)
+    current_price = result[0]
+
+    if coin not in standard_price:
+        dic = upbit_api('days', None, 'KRW', coin, 1, None)
+        new_coin = CryptoCoin(dic[0]['openingPrice'])
+        standard_price[coin] = new_coin
+
+    tradePrice = current_price['tradePrice']
+    if check_diff_trigger(coin, tradePrice):
+        percent = calculate_percent(standard_price[coin].openingPrice, tradePrice)
+        message = coin + ': %f (%.2f%%)' % (tradePrice, percent*100) + '\n'
+        return True, message
+
+    return False, ''
 
 def process_func():
     now = time.localtime()
     s = "%04d-%02d-%02d %02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min)
     bot_message = s + '  current price\n'
 
+    update_message = False
     for coin in interest_coin_list:
-        bot_message += get_current_market_price(coin)
+        result, message = get_current_market_price(coin)
+        if result is True:
+            bot_message += message
+            update_message = True
 
-    print(bot_message)
-    bot = telegram.Bot(token = telegram_token)
-    bot.sendMessage(chat_id=telegram_chatbot_id, text=bot_message)
+    if update_message is True:
+        print(bot_message)
+        bot = telegram.Bot(token = telegram_token)
+        bot.sendMessage(chat_id=telegram_chatbot_id, text=bot_message)
 
 def get_token_and_chat_id():
     f = open(privacy + '/token.txt', mode='r')
