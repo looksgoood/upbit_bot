@@ -119,9 +119,10 @@ def get_token_and_chat_id():
 def new_day_setting_func():
     print('new day setting!=============================================================')
     for coin in interest_coin_list:
+        print(coin, '->', end='')
         dic = upbit_api('days', None, 'KRW', coin, 1, None)
         new_coin = CryptoCoin(dic[0]['prevClosingPrice'])
-        print(coin, 'price is', new_coin.prevClosingPrice)
+        print('price is', new_coin.prevClosingPrice)
         standard_price[coin] = new_coin
     print('new day setting!=============================================================')
 
@@ -129,7 +130,7 @@ def get_current_market_volumn(coin):
     if standard_price[coin].is_volumn_checked:
         return False, ''
 
-    print('get', coin, 'current volumn.')
+    # print('get', coin, 'current volumn.')
     result = upbit_api('minutes', 10, 'KRW', coin, 2, None)
     # print(result)
     current_volumn = result[0]['candleAccTradeVolume']
