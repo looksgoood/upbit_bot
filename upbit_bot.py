@@ -17,7 +17,7 @@ request_user_agent = ''
 standard_price = {}
 
 state_standard = 0.05
-volumn_standard = 2.0
+volumn_standard = 7.0
 
 class CryptoCoin:
     def __init__(self, prevClosingPrice):
