@@ -118,12 +118,15 @@ def get_token_and_chat_id():
 
 def new_day_setting_func():
     print('new day setting!=============================================================')
+    now = time.localtime()
+    s = "%04d-%02d-%02d" % (now.tm_year, now.tm_mon, now.tm_mday)
+    bot_message = s + ' 오늘의 시가\n'
     for coin in interest_coin_list:
-        print(coin, '->', end='')
         dic = upbit_api('days', None, 'KRW', coin, 1, None)
         new_coin = CryptoCoin(dic[0]['prevClosingPrice'])
-        print('price is', new_coin.prevClosingPrice)
+        bot_message += coin + ': ' + str(new_coin.prevClosingPrice) + '\n'
         standard_price[coin] = new_coin
+    send_message_to_bot(bot_message)
     print('new day setting!=============================================================')
 
 def get_current_market_volumn(coin):
@@ -165,7 +168,7 @@ if __name__ == '__main__':
     sched.start()
     sched.add_job(new_day_setting_func,'cron', hour='9', minute='1')
     sched.add_job(price_check_func,'cron', hour='0-23', minute='*/10', second='2')
-    sched.add_job(volumn_check_func,'cron', hour='0-23', minute='*/3,*/4,*/5,*/6,*/7,*/8,*/9')
+    # sched.add_job(volumn_check_func,'cron', hour='0-23', minute='*/3,*/4,*/5,*/6,*/7,*/8,*/9')
 
     try:
         # This is here to simulate application activity (which keeps the main thread alive).
