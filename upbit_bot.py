@@ -80,7 +80,7 @@ def get_current_market_price(coin):
     tradePrice = current_price['tradePrice']
     if check_diff_trigger(coin, tradePrice):
         percent = calculate_percent(standard_price[coin].prevClosingPrice, tradePrice)
-        message = coin + ': %f (%.2f%%)' % (tradePrice, percent*100) + '\n'
+        message = coin + ': %.1f (%.2f%%)' % (tradePrice, percent*100) + '\n'
         return True, message
 
     return False, ''
