@@ -8,7 +8,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 privacy = './privacy'
-interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM', 'ADA', 'SNT']
+interest_coin_list = ['BTC', 'ETH', 'NEO', 'QTUM', 'ADA', 'SNT', 'EOS', 'SC', 'TRX']
 upbit_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s/%d?code=CRIX.UPBIT.%s-%s&count=%d'
 upbit_without_period_url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/%s?code=CRIX.UPBIT.%s-%s&count=%d'
 telegram_token = ''
